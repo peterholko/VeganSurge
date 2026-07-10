@@ -324,10 +324,10 @@ table.annual th:first-child { text-align: left; }
 table.annual td { text-align: right; padding: 0.16rem 0.4rem; white-space: nowrap; }
 table.annual td:first-child { text-align: left; font-weight: 600; }
 table.annual tr:nth-child(even) td { background: var(--zebra); }
-table.annual .est td { color: #1a2028; } /* MS: estimates upright, marked by " e" + arrow only */
-table.annual .est td.pos, table.annual td.pos { color: #007942; }
+table.annual .est td { color: var(--text); } /* MS: estimates upright, marked by " e" + arrow only */
+table.annual .est td.pos, table.annual td.pos { color: var(--accent); }
 table.annual .est td.neg, table.annual td.neg { color: var(--red); }
-.tr-up { color: #007942; }
+.tr-up { color: var(--accent); }
 .tr-down { color: var(--red); }
 
 .fp-stats {
@@ -367,7 +367,7 @@ table.annual .est td.neg, table.annual td.neg { color: var(--red); }
 }
 #toolsBar button.tool {
   border: none; background: none; cursor: pointer; font-size: 1.05rem;
-  padding: 0.4rem 0.55rem; border-right: 1px solid #eef1f5; color: #3c4654;
+  padding: 0.4rem 0.55rem; border-right: 1px solid var(--border); color: var(--text);
   font-family: inherit; line-height: 1;
 }
 #toolsBar button.tool:last-of-type { border-right: none; }
@@ -423,7 +423,7 @@ table.annual .est td.neg, table.annual td.neg { color: var(--red); }
 #mkPalette button {
   border: 1px solid var(--border); background: var(--surface); border-radius: 4px;
   font-size: 1rem; cursor: pointer; padding: 0.25rem 0; width: 100%; line-height: 1.2;
-  font-family: inherit; color: #394859;
+  font-family: inherit; color: var(--text);
 }
 #mkPalette button:hover { background: var(--hover); }
 #mkPalette button.on { background: var(--hover); color: var(--accent); border-color: #027d42; }

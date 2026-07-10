@@ -17,6 +17,7 @@ const LIGHT = {
   gridStrong: "#dfe4ea",
   axis: "#5d6c7c",
   text: "#1a2028",
+  ink: "#1a1a1a",       // near-black lines (200d MA, mono bars) — themed
   rs: "#2534e9",
   rsLabel: "#5050ff",
   spx: "#1a1a1a",
@@ -56,6 +57,7 @@ const DARK = {
   gridStrong: "#39424e",
   axis: "#8b97a6",
   text: "#e6ebf2",
+  ink: "#c3ccd8",
   rs: "#6ea8ff",
   rsLabel: "#8aa0ff",
   spx: "#c3ccd8",
@@ -150,6 +152,12 @@ export class Chart {
     return this.tf.startsWith("i");
   }
 
+  // the "#1a1a1a" series color (200d/40w MA) is theme-mapped so it stays
+  // visible in night mode
+  _seriesColor(c) {
+    return c === "#1a1a1a" ? COLORS.ink : c;
+  }
+
   // dynamic font scale: grows with chart size
   px(s) {
     return Math.max(9, Math.round(s * this.fontScale));
@@ -186,7 +194,9 @@ export class Chart {
     this.rsNewHigh = this.rs ? this._computeRsNewHighs() : null;
     this.volAvg = sma(this.bars.v, this.tf === "w" ? 10 : 50);
     this.earnings = (data.earnings || []).filter((e) => e.t >= b.t[0]);
-    if (financials) this.financials = financials;
+    // assign even when null — keeping the previous symbol's financials would
+    // draw the wrong EPS/Sales footer after a failed financials fetch
+    this.financials = financials;
     this.quarters = (this.financials?.quarterly || []).filter(
       (q) => q.t >= b.t[0] && (q.eps != null || q.sales != null)
     );
@@ -711,7 +721,7 @@ export class Chart {
       ctx.lineTo(Math.round(x) + 0.5, this.dateAxisY);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = strong ? "#1a2028" : COLORS.axis;
+      ctx.fillStyle = strong ? COLORS.text : COLORS.axis;
       ctx.font = strong ? this.font(11, "bold") : this.font(11);
       ctx.fillText(label, x, this.dateAxisY + 5);
     }
@@ -740,7 +750,7 @@ export class Chart {
     for (const phase of ["up", "down", "mono"]) {
       if (type === "bar" && phase !== "mono") continue;
       if (type !== "bar" && phase === "mono") continue;
-      ctx.strokeStyle = phase === "mono" ? "#1a1a1a" : COLORS[phase];
+      ctx.strokeStyle = phase === "mono" ? COLORS.ink : COLORS[phase];
       ctx.beginPath();
       for (let i = i0; i <= i1; i++) {
         if (type !== "bar") {
@@ -819,7 +829,8 @@ export class Chart {
   }
 
   _drawMAs(ctx) {
-    for (const ma of this.mas) this._drawLine(ctx, ma.values, ma.color, 1.3, (v) => this.priceToY(v));
+    for (const ma of this.mas)
+      this._drawLine(ctx, ma.values, this._seriesColor(ma.color), 1.3, (v) => this.priceToY(v));
   }
 
   _drawStudies(ctx) {
@@ -1530,7 +1541,7 @@ export class Chart {
     const y = this.pricePane.y + 6;
     if (this.flags.mas) {
       for (const ma of this.mas) {
-        ctx.fillStyle = ma.color;
+        ctx.fillStyle = this._seriesColor(ma.color);
         ctx.fillText(`— ${ma.label}`, x, y);
         x += ctx.measureText(`— ${ma.label}`).width + 12;
       }
@@ -1646,7 +1657,7 @@ export class Chart {
       const mv = ma.values[i];
       if (mv != null) {
         const d = ((c / mv - 1) * 100);
-        rows.push([`SMA(${ma.period})`, `${fmtPrice(mv)} ${fmtPct(d)}`, ma.color]);
+        rows.push([`SMA(${ma.period})`, `${fmtPrice(mv)} ${fmtPct(d)}`, this._seriesColor(ma.color)]);
       }
     }
 

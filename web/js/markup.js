@@ -47,6 +47,9 @@ export class Markup {
   setTool(id) {
     this.tool = id;
     this.canvas.style.pointerEvents = id ? "auto" : "none";
+    // the #overlay canvas sits above #markup in the DOM and would swallow
+    // every pointer event — lift the markup canvas while a tool is active
+    this.canvas.style.zIndex = id ? "4" : "";
     this.canvas.style.cursor = id ? "crosshair" : "default";
   }
 
@@ -111,10 +114,16 @@ export class Markup {
     });
     el.addEventListener("pointerup", (e) => {
       if (!this.pending) return;
-      this.shapes.push(this.pending);
+      const s = this.pending;
       this.pending = null;
-      this.redo = [];
-      this.save();
+      // discard zero-size shapes (a stray click with no drag draws nothing
+      // but would silently clutter the undo stack)
+      const isClick = s.type === "free" ? s.pts.length < 2 : s.a.t === s.b.t && s.a.p === s.b.p;
+      if (!isClick || s.type === "hline" || s.type === "vline") {
+        this.shapes.push(s);
+        this.redo = [];
+        this.save();
+      }
       this.draw();
       el.releasePointerCapture(e.pointerId);
     });

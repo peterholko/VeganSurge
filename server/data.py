@@ -177,14 +177,20 @@ def _earnings(symbol):
     if df is None or df.empty:
         return []
     rows = []
+    now = time.time()
     for ts, row in df.sort_index().iterrows():
+        if ts.timestamp() > now:
+            continue  # upcoming report — would draw a bogus flag on the last bar
         eps = row.get("Reported EPS")
+        est = row.get("EPS Estimate")
+        sur = row.get("Surprise(%)")
         rows.append(
             {
                 "t": int(ts.timestamp()),
                 "eps": _clean(float(eps)) if eps is not None else None,
-                "est": _clean(float(row.get("EPS Estimate") or float("nan"))),
-                "surprise": _clean(float(row.get("Surprise(%)") or float("nan"))),
+                # explicit None checks: `or` would turn a legitimate 0.0 into None
+                "est": _clean(float(est)) if est is not None else None,
+                "surprise": _clean(float(sur)) if sur is not None else None,
             }
         )
     # YoY % change vs the report 4 quarters earlier

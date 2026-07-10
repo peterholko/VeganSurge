@@ -108,6 +108,10 @@ async function loadSymbol(symbol, { keepView = false } = {}) {
     state.daily = null;
     state.profile = null;
     state.rsRating = null;
+    state.quote = null; // header stats must not mix the old symbol's quote in
+    $("qhPrice").textContent = "—";
+    $("qhChange").textContent = "";
+    $("qhVolume").textContent = "";
   }
 
   try {
@@ -124,6 +128,9 @@ async function loadSymbol(symbol, { keepView = false } = {}) {
     state.profile = profile;
     state.financials = financials;
     chart.setData(chartData, { keepView, financials });
+    // clear the previous symbol's RS Rating from the chart label; the fresh
+    // rating is re-applied by fetchRsRating when it arrives
+    chart.setRsRating(state.rsRating?.rating ?? null);
     chart.setAlertLines((state.alerts[symbol] || []).map((a) => a.price));
     tools.setSymbol(symbol);
     if (state.tf === "d") state.daily = chartData;
