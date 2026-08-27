@@ -43,3 +43,10 @@ export function fmtDateTime(tsSec) {
 export function clsSign(v) {
   return v > 0 ? "pos" : v < 0 ? "neg" : "";
 }
+
+// Escape a value for safe interpolation into innerHTML (text or quoted attr).
+export function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
+}

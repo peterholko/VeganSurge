@@ -1,0 +1,31 @@
+{
+  "name": "vegansurge",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-01",
+  "workers_dev": false,
+  "assets": {
+    "directory": "../web",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "RS_KV",
+      "id": "99f341685fc2413683e6791b764f003c"
+    }
+  ],
+  "triggers": {
+    "crons": ["*/2 * * * *"]
+  },
+  "routes": [
+    { "pattern": "kittywithfangs.com", "custom_domain": true }
+  ],
+  "vars": {
+    // SEC asks automated clients to identify themselves with a contact address
+    "VEGANSURGE_CONTACT": "peter.holko@gmail.com"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

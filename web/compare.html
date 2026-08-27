@@ -39,7 +39,11 @@ canvas { position:absolute; inset:0; width:100%; height:100%; }
 <script>
 const COLORS = ["#1763b8","#e03131","#0a8f3c","#e8590c","#7048e8","#0c8599","#d6336c","#5c940d"];
 const params = new URLSearchParams(location.search);
-let syms = (params.get("syms") || "AAPL").toUpperCase().split(",").filter(Boolean).slice(0, 8);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const validSym = (s) => /^[A-Z0-9.^=-]{1,12}$/.test(s);
+let syms = (params.get("syms") || "AAPL").toUpperCase().split(",").filter(validSym).slice(0, 8);
+if (!syms.length) syms = ["AAPL"];
 let days = 126;
 let series = {}; // sym -> {t:[], c:[]}
 
@@ -64,8 +68,8 @@ async function load() {
 function renderChips() {
   document.getElementById("chips").innerHTML = syms
     .map((s, i) =>
-      `<span class="chip"><i style="background:${COLORS[i % COLORS.length]}"></i>${s}` +
-      `<span data-s="${s}" title="Remove">✕</span></span>`)
+      `<span class="chip"><i style="background:${COLORS[i % COLORS.length]}"></i>${esc(s)}` +
+      `<span data-s="${esc(s)}" title="Remove">✕</span></span>`)
     .join(" ");
   for (const x of document.querySelectorAll(".chip span[data-s]")) {
     x.onclick = () => { syms = syms.filter((s) => s !== x.dataset.s); load(); };
@@ -150,7 +154,7 @@ document.getElementById("addBtn").onclick = add;
 document.getElementById("symInput").onkeydown = (e) => e.key === "Enter" && add();
 function add() {
   const s = document.getElementById("symInput").value.trim().toUpperCase();
-  if (s && !syms.includes(s) && syms.length < 8) { syms.push(s); document.getElementById("symInput").value = ""; load(); }
+  if (validSym(s) && !syms.includes(s) && syms.length < 8) { syms.push(s); document.getElementById("symInput").value = ""; load(); }
 }
 for (const b of document.querySelectorAll("#ranges button")) {
   b.onclick = () => {

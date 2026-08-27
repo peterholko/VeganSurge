@@ -2,7 +2,7 @@ import { api } from "./api.js";
 import { Chart } from "./chart.js";
 import { initTools } from "./tools.js";
 import { upDownVolume, adrPct, perf } from "./indicators.js";
-import { fmtPrice, fmtNum, fmtPct, fmtChange, clsSign } from "./fmt.js";
+import { fmtPrice, fmtNum, fmtPct, fmtChange, clsSign, esc } from "./fmt.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -489,8 +489,8 @@ $("listAddBtn").addEventListener("click", (e) => {
     Object.keys(state.lists)
       .map((name) => {
         const inList = state.lists[name].includes(state.symbol);
-        return `<div class="choice ${inList ? "inlist" : ""}" data-name="${name}">` +
-          `${inList ? "✓ " : ""}${name}</div>`;
+        return `<div class="choice ${inList ? "inlist" : ""}" data-name="${esc(name)}">` +
+          `${inList ? "✓ " : ""}${esc(name)}</div>`;
       })
       .join("") + `<div class="choice" data-new="1">＋ New list…</div>`;
   for (const c of pop.querySelectorAll(".choice")) {
@@ -535,8 +535,9 @@ function renderCompanyBar() {
   $("qhIndustry").textContent = [p?.industry, p?.sector].filter(Boolean).join(" · ");
   $("qhSummary").textContent = p?.summary || "";
   const site = p?.website;
-  $("qhWebsite").textContent = site ? site.replace(/^https?:\/\/(www\.)?/, "") : "";
-  $("qhWebsite").href = site || "#";
+  const safeSite = /^https?:\/\//i.test(site || "") ? site : null;
+  $("qhWebsite").textContent = safeSite ? safeSite.replace(/^https?:\/\/(www\.)?/, "") : "";
+  $("qhWebsite").href = safeSite || "#";
 }
 
 function renderHeaderStats() {
@@ -564,7 +565,7 @@ function renderHeaderStats() {
     const atr = atr21Pct(d);
     pair("21 Day ATR %", atr != null ? atr.toFixed(2) + "%" : null);
   }
-  pair("HQ", p?.hq);
+  pair("HQ", p?.hq ? esc(p.hq) : null);
   if (p?.high52 && q?.last) {
     const off = (q.last / p.high52 - 1) * 100;
     pair("Off 52-Wk High", fmtPct(off), clsSign(off));
@@ -767,7 +768,7 @@ function renderFloatPanel() {
     add("Shares Out", p.sharesOutstanding ? fmtNum(p.sharesOutstanding) : null);
     add("52-Wk Range", p.low52 && p.high52 ? `${fmtPrice(p.low52)}–${fmtPrice(p.high52)}` : null);
     add("Avg Vol (50d)", p.avgVolume ? fmtNum(p.avgVolume) : null);
-    add("Exchange", p.exchange);
+    add("Exchange", p.exchange ? esc(p.exchange) : null);
   }
   if (rows.length) parts.push(`<div class="fp-stats">${rows.join("")}</div>`);
 
@@ -907,9 +908,9 @@ function renderSearch() {
   if (!searchItems.length) { hideSearch(); return; }
   searchResults.innerHTML = searchItems
     .map((it, i) =>
-      `<div class="row ${i === searchSel ? "sel" : ""}" data-sym="${it.symbol}">` +
-      `<span class="sym">${it.symbol}</span><span class="name">${it.name}</span>` +
-      `<span class="exch">${it.exchange}</span></div>`)
+      `<div class="row ${i === searchSel ? "sel" : ""}" data-sym="${esc(it.symbol)}">` +
+      `<span class="sym">${esc(it.symbol)}</span><span class="name">${esc(it.name)}</span>` +
+      `<span class="exch">${esc(it.exchange)}</span></div>`)
     .join("");
   searchResults.classList.remove("hidden");
   for (const row of searchResults.querySelectorAll(".row")) {
@@ -954,7 +955,7 @@ searchInput.addEventListener("blur", () => setTimeout(hideSearch, 150));
 
 function renderListSelect() {
   $("listSelect").innerHTML = Object.keys(state.lists)
-    .map((n) => `<option ${n === state.activeList ? "selected" : ""}>${n}</option>`)
+    .map((n) => `<option ${n === state.activeList ? "selected" : ""}>${esc(n)}</option>`)
     .join("");
 }
 
@@ -989,9 +990,9 @@ $("listDel").addEventListener("click", () => {
 function renderWatchlist() {
   $("watchlist").innerHTML = wl()
     .map((s) =>
-      `<div class="wl-row" data-sym="${s}">` +
-      `<span class="sym">${s}</span><span class="px" id="wlp-${s}">—</span>` +
-      `<span class="chg" id="wlc-${s}"></span>` +
+      `<div class="wl-row" data-sym="${esc(s)}">` +
+      `<span class="sym">${esc(s)}</span><span class="px" id="wlp-${esc(s)}">—</span>` +
+      `<span class="chg" id="wlc-${esc(s)}"></span>` +
       `<button class="rm" title="Remove">✕</button></div>`)
     .join("");
   for (const row of $("watchlist").querySelectorAll(".wl-row")) {
